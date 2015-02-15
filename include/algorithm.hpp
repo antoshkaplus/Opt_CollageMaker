@@ -11,7 +11,7 @@
 #define __ALGORITHM_H__
 
 
-#include "grid_approx.h"
+#include "grid_approx.hpp"
 
 namespace collage_maker {
 
@@ -23,33 +23,33 @@ struct Queue : Base {
     
     // will try to get n items per each size
     void initQueue(const grid_approx::SourceScore& source_score) {
-        const Count kItemsPerPosition = 1500;
-        vector<Placement> local_queue;
-        local_queue.reserve(kSourceImageCount*4*4);
-        source_queue_.clear();
-        source_queue_.reserve(kItemsPerPosition*target_size_.cell_count());
-        for (auto r = 0; r < target_size_.row; ++r) {
-            for (auto c = 0; c < target_size_.col; ++c) {
-                local_queue.clear();
-                for (auto i = 0; i < kSourceImageCount; ++i) {
-                    auto& ss = source_score[i]; 
-                    for (auto h = 0; h < min<Int>(target_size_.row-r, ss.row_count()); ++h) {
-                        for (auto w = 0; w < min<Int>(target_size_.col-c, ss.col_count()); ++w) {
-                            local_queue.emplace_back(i, Position{r, c}, Size{h+1, w+1}, ss(h, w)(r, c));
-                        }
-                        
-                    }
-                }
-                sort(local_queue.begin(), local_queue.end(), [](const Placement& p_0, const Placement& p_1) {
-                    return p_0.score/p_0.s.cell_count() < p_1.score/p_1.s.cell_count();
-                
-                });
-                source_queue_.insert(
-                    source_queue_.end(), 
-                    local_queue.begin(), 
-                    local_queue.begin()+min(kItemsPerPosition, local_queue.size()));
-            }
-        }
+//        const Count kItemsPerPosition = 1500;
+//        vector<Placement> local_queue;
+//        local_queue.reserve(kSourceImageCount*4*4);
+//        source_queue_.clear();
+//        source_queue_.reserve(kItemsPerPosition*target_size_.cell_count());
+//        for (auto r = 0; r < target_size_.row; ++r) {
+//            for (auto c = 0; c < target_size_.col; ++c) {
+//                local_queue.clear();
+//                for (auto i = 0; i < kSourceImageCount; ++i) {
+//                    auto& ss = source_score; 
+//                    for (auto h = 0; h < min<Int>(target_size_.row-r, ss.target_size().row); ++h) {
+//                        for (auto w = 0; w < min<Int>(target_size_.col-c, ss.target_size().col); ++w) {
+//                            local_queue.emplace_back(i, Position{r, c}, Size{h+1, w+1}, ss.score({r, c}, {h, w}, i));
+//                        }
+//                        
+//                    }
+//                }
+//                sort(local_queue.begin(), local_queue.end(), [&](const Placement& p_0, const Placement& p_1) {
+//                    return /p_0.s.cell_count() < p_1.score/p_1.s.cell_count();
+//                
+//                });
+//                source_queue_.insert(
+//                    source_queue_.end(), 
+//                    local_queue.begin(), 
+//                    local_queue.begin()+min(kItemsPerPosition, local_queue.size()));
+//            }
+//        }
         //auto& b_covering = best_coverage_;
     }
     
@@ -83,7 +83,7 @@ struct Queue : Base {
         for (auto gain = 90; gain <= 300; gain+=gain_step) {
             for (auto i = 0; i < source_queue_.size(); ++i) {
                 auto& pl = source_queue_[i];
-                source_queue_values[i] = pl.score/pl.s.cell_count() - gain*pl.s.cell_count();
+//                source_queue_values[i] = pl.score/pl.s.cell_count() - gain*pl.s.cell_count();
             }
             sort(source_queue_indices.begin(), source_queue_indices.end(), [&](Index i_0, Index i_1) {
                 return source_queue_values[i_0] < source_queue_values[i_1];
@@ -97,22 +97,22 @@ struct Queue : Base {
             for (auto& i : source_queue_indices) {
                 auto& p = source_queue_[i];
                 if (covered_area == target_size.cell_count()) break;
-                if (used[p.i]) continue;
-                // can hard code this one
-                for (auto r = p.p.row; r < p.p.row + p.s.row; ++r) {
-                    for (auto c = p.p.col; c < p.p.col + p.s.col; ++c) {
-                        if (covering(r, c)) goto next;
-                    }
-                }
-                for (auto r = p.p.row; r < p.p.row + p.s.row; ++r) {
-                    for (auto c = p.p.col; c < p.p.col + p.s.col; ++c) {
-                        covering(r, c) = true;
-                    }
-                }
-                covered_area += p.s.cell_count();
-                score += p.score;
-                used[p.i] = true;
-                result[p.i] = Region(p.p, p.s);
+//                if (used[p.i]) continue;
+//                // can hard code this one
+//                for (auto r = p.p.row; r < p.p.row + p.s.row; ++r) {
+//                    for (auto c = p.p.col; c < p.p.col + p.s.col; ++c) {
+//                        if (covering(r, c)) goto next;
+//                    }
+//                }
+//                for (auto r = p.p.row; r < p.p.row + p.s.row; ++r) {
+//                    for (auto c = p.p.col; c < p.p.col + p.s.col; ++c) {
+//                        covering(r, c) = true;
+//                    }
+//                }
+//                covered_area += p.s.cell_count();
+//                score += p.score;
+//                used[p.i] = true;
+//                result[p.i] = Region(p.p, p.s);
                 next:;
             }
             if (covered_area == target_size.cell_count() && best_score > score) {
@@ -164,46 +164,46 @@ struct BalanceQueue : Queue {
             }
         }
         
-        for (auto r = 0; r < target_size.row; ++r) {
-            for (auto c = 0; c < target_size.col; ++c) {
-                for (auto h = 1; h <= max_source_size.row; ++h) {
-                    for (auto w = 1; w <= max_source_size.col; ++w) {
-                        for (auto i = 0; i < kSourceImageCount; ++i) {
-                            Index index = source_score.score_id({r, c}, {h, w}, i);
-                            if (!source_score.isInitialized(index)) continue;
-                            for (auto rr = r; rr < r+h; ++rr) {
-                                for (auto cc = c; cc < c+w; ++cc) {
-                                    if (placements(rr, cc)->size()
-                                        < kPlacementsPerCell ||
-                                        source_score.score(placements(rr, cc)->top())
-                                        > source_score.score(index)) {
-                                        placements(rr, cc)->pop();
-                                        placements(rr, cc)->push(i);
-                                    }
-                                }
-                            } 
-                        } 
-                    }
-                }
-            }
-        }
+//        for (auto r = 0; r < target_size.row; ++r) {
+//            for (auto c = 0; c < target_size.col; ++c) {
+//                for (auto h = 1; h <= max_source_size.row; ++h) {
+//                    for (auto w = 1; w <= max_source_size.col; ++w) {
+//                        for (auto i = 0; i < kSourceImageCount; ++i) {
+//                            Index index = source_score.score_id({r, c}, {h, w}, i);
+//                            if (!source_score.isInitialized(index)) continue;
+//                            for (auto rr = r; rr < r+h; ++rr) {
+//                                for (auto cc = c; cc < c+w; ++cc) {
+//                                    if (placements(rr, cc)->size()
+//                                        < kPlacementsPerCell ||
+//                                        source_score.score(placements(rr, cc)->top())
+//                                        > source_score.score(index)) {
+//                                        placements(rr, cc)->pop();
+//                                        placements(rr, cc)->push(i);
+//                                    }
+//                                }
+//                            } 
+//                        } 
+//                    }
+//                }
+//            }
+//        }
         vector<Index> all_indices;
-        all_indices.reserve(target_size_.cell_count()*kPlacementsPerCell);
-        for (auto& pq : placements) {
-            while (!pq->empty()) {
-                all_indices.push_back(pq->top());
-                pq->pop();
-            }
-        } 
+//        all_indices.reserve(target_size_.cell_count()*kPlacementsPerCell);
+//        for (auto& pq : placements) {
+//            while (!pq->empty()) {
+//                all_indices.push_back(pq->top());
+//                pq->pop();
+//            }
+//        } 
         sort(all_indices.begin(), all_indices.end());
-        source_placement_queue_.reserve(target_size_.cell_count()*kPlacementsPerCell);
-        source_placement_queue_.push_back(all_indices[0]);
-        for (auto i = 1; i < all_indices.size(); ++i) {
-            if (all_indices[i-1] == all_indices[i]) continue;
-            source_placement_queue_.push_back(all_indices[i]); 
-        }
-        source_placement_queue_.shrink_to_fit();
-        sort(source_placement_queue_.begin(), source_placement_queue_.end(), pl_comp);
+//        source_placement_queue_.reserve(target_size_.cell_count()*kPlacementsPerCell);
+//        source_placement_queue_.push_back(all_indices[0]);
+//        for (auto i = 1; i < all_indices.size(); ++i) {
+//            if (all_indices[i-1] == all_indices[i]) continue;
+//            source_placement_queue_.push_back(all_indices[i]); 
+//        }
+//        source_placement_queue_.shrink_to_fit();
+//        sort(source_placement_queue_.begin(), source_placement_queue_.end(), pl_comp);
     }
     
     
@@ -238,68 +238,68 @@ struct BalanceQueue : Queue {
             vector<Index> queue_indices;
             Int covered_area = 0;
             double score = 0;
-            for (auto i = 0; i < source_placement_queue_.size(); ++i) {
-                auto pl = source_score.placement(source_placement_queue_[i]);
-                // can use
-                if (used[p.i]) continue;
-                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
-                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
-                        if (covering(r, c)) goto next;
-                    }
-                }
-                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
-                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
-                        covering(r, c) = true;
-                        cell_score(r, c) = source_score.score(source_placement_queue_[i])/pl.size.cell_count();
-                    }
-                }
-                queue_indices.push_back(i);
-                covered_area += p.s.cell_count();
-                score += p.score;
-                used[p.i] = true;
-                
-                if (covered_area == target_size.cell_count()) break;
-            }
+//            for (auto i = 0; i < source_placement_queue_.size(); ++i) {
+//                auto pl = source_score.placement(source_placement_queue_[i]);
+//                // can use
+//                if (used[p.i]) continue;
+//                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
+//                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
+//                        if (covering(r, c)) goto next;
+//                    }
+//                }
+//                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
+//                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
+//                        covering(r, c) = true;
+//                        cell_score(r, c) = source_score.score(source_placement_queue_[i])/pl.size.cell_count();
+//                    }
+//                }
+//                queue_indices.push_back(i);
+//                covered_area += p.s.cell_count();
+//                score += p.score;
+//                used[p.i] = true;
+//                
+//                if (covered_area == target_size.cell_count()) break;
+//            }
             
             // now we got solution. time to weight it
         }
         
     
-            
-            for (auto i : queue_indices) {
-                auto q_i = source_queue_indices[i];
-                auto &q_pl = source_queue_[q_i];
-                double cur_score = q_pl.score/q_pl.s.cell_count();
-                const Count kNext = 10;
-                Count cur_count = 0;
-                double other_score = 0;
-                for (auto i_next = i+1; i_next < source_queue_indices.size() && cur_count < kNext; ++i_next) {
-                    if (q_pl.i != source_queue_[source_queue_indices[i_next]].i) continue;
-                    auto& next_pl = source_queue_[source_queue_indices[i_next]];
-                    double next_score = -next_pl.score;
-                    for (auto r = next_pl.p.row; r < next_pl.p.row+next_pl.s.row; ++r) {
-                        for (auto c = next_pl.p.col; c < next_pl.p.col+next_pl.s.col; ++c) {
-                            next_score += cell_score(r, c);
-                        }
-                    }
-                    if (next_score > 0) {
-                        other_score += next_score;
-                        cur_count += 1; 
-                    }
-                }
-                if (cur_count == 0) continue;
-                other_score +=  
-            }
-            
-            
-            
-            if (covered_area == target_size.cell_count() && best_score > score) {
-                best_score = score;
-                best_result = result;
-            }
-        }
-        score_ = best_score;
-        return best_result;
+//            
+//            for (auto i : queue_indices) {
+//                auto q_i = source_queue_indices[i];
+//                auto &q_pl = source_queue_[q_i];
+//                double cur_score = q_pl.score/q_pl.s.cell_count();
+//                const Count kNext = 10;
+//                Count cur_count = 0;
+//                double other_score = 0;
+//                for (auto i_next = i+1; i_next < source_queue_indices.size() && cur_count < kNext; ++i_next) {
+//                    if (q_pl.i != source_queue_[source_queue_indices[i_next]].i) continue;
+//                    auto& next_pl = source_queue_[source_queue_indices[i_next]];
+//                    double next_score = -next_pl.score;
+//                    for (auto r = next_pl.p.row; r < next_pl.p.row+next_pl.s.row; ++r) {
+//                        for (auto c = next_pl.p.col; c < next_pl.p.col+next_pl.s.col; ++c) {
+//                            next_score += cell_score(r, c);
+//                        }
+//                    }
+//                    if (next_score > 0) {
+//                        other_score += next_score;
+//                        cur_count += 1; 
+//                    }
+//                }
+//                if (cur_count == 0) continue;
+//                other_score +=  
+//            }
+//            
+//            
+//            
+//            if (covered_area == target_size.cell_count() && best_score > score) {
+//                best_score = score;
+//                best_result = result;
+//            }
+//        }
+//        score_ = best_score;
+//        return best_result;
     }
     
     vector<Index> source_placement_queue_;
@@ -342,11 +342,11 @@ struct TabuSearch : Base {
     
     double score(const MoveLocation& ml) {
         auto& m = move(ml);
-        return (*source_score_)[m.source_index](m.size.row-1, m.size.col-1)(ml.position);
+//        return (*source_score_)[m.source_index](m.size.row-1, m.size.col-1)(ml.position);
     } 
     
     double score(const Position& p, const Move& m) {
-        return (*source_score_)[m.source_index](m.size.row-1, m.size.col-1)[p];
+//        return (*source_score_)[m.source_index](m.size.row-1, m.size.col-1)[p];
     } 
     
     const Move& move(const MoveLocation& ml) {
@@ -364,28 +364,28 @@ struct TabuSearch : Base {
         }
         vector<Move> local_candidates(kCandPerPosExists);
         for (auto r = 0; r < target_size_.row; ++r) {
-            for (auto c = 0; c < target_size_.col; ++c) {
-                local_candidates.clear();
-                for (Index i = 0; i < kSourceImageCount; ++i) {
-                    auto& ss = source_score[i]; 
-                    for (auto h = 0; h < min(target_size_.row-r, (Int)ss.row_count()); ++h) {
-                        for (auto w = 0; w < min(target_size_.col-c, (Int)ss.col_count()); ++w) {
-                            local_candidates.emplace_back(i, Size{h+1, w+1});
-                        }
-                    }
-                }
-                sort(local_candidates.begin(), local_candidates.end(), 
-                    [=,&source_score](const Move& m_0, const Move& m_1) {
-                        return source_score[m_0.source_index](m_0.size.row-1, m_0.size.col-1)(r, c)/(25*25*m_0.size.cell_count()) 
-                                - 10*m_0.size.cell_count() < 
-                                source_score[m_1.source_index](m_1.size.row-1, m_1.size.col-1)(r, c)/(25*25*m_1.size.cell_count())
-                                - 10*m_1.size.cell_count();
-                });
-                auto& cand = candidate_list_(r, c); 
-                cand.assign(local_candidates.begin(), 
-                            local_candidates.begin()+min(kCandPerPosUsing, local_candidates.size()));
-                candidate_tabu_(r, c).resize(cand.size(), false);
-            }
+//            for (auto c = 0; c < target_size_.col; ++c) {
+//                local_candidates.clear();
+//                for (Index i = 0; i < kSourceImageCount; ++i) {
+////                    auto& ss = source_score[i]; 
+////                    for (auto h = 0; h < min(target_size_.row-r, (Int)ss.row_count()); ++h) {
+////                        for (auto w = 0; w < min(target_size_.col-c, (Int)ss.col_count()); ++w) {
+////                            local_candidates.emplace_back(i, Size{h+1, w+1});
+////                        }
+////                    }
+//                }
+//                sort(local_candidates.begin(), local_candidates.end(), 
+//                    [=,&source_score](const Move& m_0, const Move& m_1) {
+////                        return source_score[m_0.source_index](m_0.size.row-1, m_0.size.col-1)(r, c)/(25*25*m_0.size.cell_count()) 
+////                                - 10*m_0.size.cell_count() < 
+////                                source_score[m_1.source_index](m_1.size.row-1, m_1.size.col-1)(r, c)/(25*25*m_1.size.cell_count())
+////                                - 10*m_1.size.cell_count();
+//                });
+//                auto& cand = candidate_list_(r, c); 
+//                cand.assign(local_candidates.begin(), 
+////                            local_candidates.begin()+min(kCandPerPosUsing, local_candidates.size()));
+////                candidate_tabu_(r, c).resize(cand.size(), false);
+//            }
         }
     }
     

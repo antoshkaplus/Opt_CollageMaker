@@ -8,22 +8,21 @@
 
 #include <iostream>
 #include <fstream>
+#include <array>
 
-#include <ant>
-
-#include "grid_approx.h"
-#include "utility.h"
-#include "solver.h"
+//#include "grid_approx.hpp"
+#include "utility.hpp"
+#include "solver.hpp"
 //#include "ant_colony.h"
-#include "algorithm.h"
-//#include "max_rect.h"
+//#include "algorithm.hpp"
+#include "max_rect.hpp"
 
 using namespace std;
 using namespace collage_maker;
 
 //#define GET_DATA
 //#define DEBUG
-#define RELEASE
+//#define RELEASE
 
 
 
@@ -40,32 +39,37 @@ struct CollageMaker {
 
 
 int main(int argc, const char * argv[]) {
-#ifdef GET_DATA
-    ofstream out_input(root + "input.txt");
-    auto data = readInput(cin);
-    out_input << data.size() << " ";
-    for (int d : data) out_input << d << " ";
-    out_input.flush();
-#elif defined DEBUG
-    CollageMaker cm;
-    ifstream input(root + "input.txt");
-    auto data = readInput(input);
-    data = cm.compose(data);
-    for (int i = 0; i < data.size(); ++i) {
-        cout << data[i] << endl;
-    }
-    cout.flush();
-#elif defined RELEASE 
-    CollageMaker cm;
-    auto data = readInput(cin);
-    clock_t t = clock();
-    data = cm.compose(data);
-    //cerr << "time: " << (clock() - t)/CLOCKS_PER_SEC << endl;
-    for (int i = 0; i < data.size(); ++i) {
-        cout << data[i] << endl;
-    }
-    cout.flush();
-#endif
+    CollageMaker m;
+    vector<int> v;
+    m.compose(v);
+    
+    
+//#ifdef GET_DATA
+//    ofstream out_input(root + "input.txt");
+//    auto data = readInput(cin);
+//    out_input << data.size() << " ";
+//    for (int d : data) out_input << d << " ";
+//    out_input.flush();
+//#elif defined DEBUG
+//    CollageMaker cm;
+//    ifstream input(root + "input.txt");
+//    auto data = readInput(input);
+//    data = cm.compose(data);
+//    for (int i = 0; i < data.size(); ++i) {
+//        cout << data[i] << endl;
+//    }
+//    cout.flush();
+//#elif defined RELEASE 
+//    CollageMaker cm;
+//    auto data = readInput(cin);
+//    clock_t t = clock();
+//    data = cm.compose(data);
+//    //cerr << "time: " << (clock() - t)/CLOCKS_PER_SEC << endl;
+//    for (int i = 0; i < data.size(); ++i) {
+//        cout << data[i] << endl;
+//    }
+//    cout.flush();
+//#endif
     return 0;
 }
 

@@ -11,9 +11,10 @@
 
 #include <valarray>
 #include <memory>
+#include <array>
 
 
-#include "solver.h"
+#include "solver.hpp"
 
 
 namespace collage_maker {
@@ -37,11 +38,12 @@ namespace algorithm {
 
 
 struct Placement {
+    Placement() {}
     Placement(const Position& p, const Size& s, Index i)  
     : position(p), size(s), source_index(i) {}
     
     bool isMutuallyOpposite(const Placement& pl) {
-        return index == pl.index || Region(position, size).hasIntersection(Region(pl.position, pl.size));
+        return source_index == pl.source_index || Region(position, size).hasIntersection(Region(pl.position, pl.size));
     }
     
     Position position;
@@ -70,7 +72,7 @@ struct SourceScore {
         id_ %= s_row_factor_2;
         pl.size.col = id_/s_col_factor_3;
         id_ %= s_col_factor_3;
-        pl.index = id_;
+        pl.source_index = id_;
         return pl;
     }
     
@@ -156,15 +158,15 @@ struct Base : collage_maker::Base {
         S_MAX_H = 4,
         S_MAX_W = 4;
         auto& source = *source_;
-        for (auto i = 0; i < kSourceImageCount; ++i) {
-            Size sz(source[i].row_count()/cell_size_, source[i].col_count()/cell_size_);
-            source_score_[i].resize(sz);
-            for (auto h = 0; h < sz.row; ++h) {
-                for (auto w = 0; w < sz.col; ++w) {
-                    source_score_[i](h, w).resize(T_H-h, T_W-w);
-                }
-            }
-        }
+//        for (auto i = 0; i < kSourceImageCount; ++i) {
+//            Size sz(source[i].row_count()/cell_size_, source[i].col_count()/cell_size_);
+//            (*source_score_)[i].resize(sz);
+//            for (auto h = 0; h < sz.row; ++h) {
+//                for (auto w = 0; w < sz.col; ++w) {
+//                    source_score_[i](h, w).resize(T_H-h, T_W-w);
+//                }
+//            }
+//        }
         
         if (T_H*T_W > 12*9) {
             for (auto h = 0; h < S_MAX_H; ++h) {
@@ -185,16 +187,16 @@ struct Base : collage_maker::Base {
                             }
                         }
                     }
-                    for (auto i = 0; i < kSourceImageCount; ++i) {
-                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
-                        Mat m = scaleSmart(source[i], sz);
-                        for (auto r = 0; r < T_H-h; ++r) {
-                            for (auto c = 0; c < T_W-w; ++c) {
-                                source_score_[i](h, w)(r, c) = 
-                                    ::collage_maker::score(m, target_bits(r, c))/(5.*5.);
-                            }
-                        }
-                    }
+//                    for (auto i = 0; i < kSourceImageCount; ++i) {
+//                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
+//                        Mat m = scaleSmart(source[i], sz);
+//                        for (auto r = 0; r < T_H-h; ++r) {
+//                            for (auto c = 0; c < T_W-w; ++c) {
+//                                source_score_[i](h, w)(r, c) = 
+//                                    ::collage_maker::score(m, target_bits(r, c))/(5.*5.);
+//                            }
+//                        }
+//                    }
                 
                 }
             }
@@ -214,15 +216,15 @@ struct Base : collage_maker::Base {
                             target_bits(r, c) = target_->submat(pos, sz);
                         }
                     }
-                    for (auto i = 0; i < kSourceImageCount; ++i) {
-                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
-                        Mat m = scaleSmart(source[i], sz);
-                        for (auto r = 0; r < T_H-h; ++r) {
-                            for (auto c = 0; c < T_W-w; ++c) {
-                                source_score_[i](h, w)(r, c) = (double)::collage_maker::score(m, target_bits(r, c))/(double)(cell_size_*cell_size_);;
-                            }
-                        }
-                    }
+//                    for (auto i = 0; i < kSourceImageCount; ++i) {
+//                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
+//                        Mat m = scaleSmart(source[i], sz);
+//                        for (auto r = 0; r < T_H-h; ++r) {
+//                            for (auto c = 0; c < T_W-w; ++c) {
+//                                source_score_[i](h, w)(r, c) = (double)::collage_maker::score(m, target_bits(r, c))/(double)(cell_size_*cell_size_);;
+//                            }
+//                        }
+//                    }
                     
                 }
             }
@@ -234,16 +236,16 @@ struct Base : collage_maker::Base {
     }
     
     void compose() override {
-        initPseudoTarget();
-        initSourceScore();
-        map<Index, Region> result = algorithm_->compose(source_score_, target_cell_count_);
-        vector<Index> is;
-        vector<Region> rs;        
-        tie(is, rs) = ant::zip(result);
-        rs = scaleInnerRegions(rs, target_cell_count_, target_->size());
-        for (auto i = 0; i < result.size(); ++i) {
-            result[is[i]] = rs[i];
-        }
+//        initPseudoTarget();
+//        initSourceScore();
+//        map<Index, Region> result = algorithm_->compose(source_score_, target_cell_count_);
+//        vector<Index> is;
+//        vector<Region> rs;        
+//        tie(is, rs) = ant::zip(result);
+//        rs = scaleInnerRegions(rs, target_cell_count_, target_->size());
+//        for (auto i = 0; i < result.size(); ++i) {
+//            result[is[i]] = rs[i];
+//        }
 //        score_ = sqrt((double)::collage_maker::scoreSmart(result, source_, target_)/target_->element_count());
 //        return result;
     }

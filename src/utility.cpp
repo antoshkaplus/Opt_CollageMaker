@@ -6,4 +6,3 @@
 //  Copyright (c) 2014 Anton Logunov. All rights reserved.
 //
 
-#include <stdio.h>

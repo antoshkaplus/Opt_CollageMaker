@@ -11,24 +11,26 @@
 
 #include <queue>
 
-#include <ant>
+#include "ant/core.h"
+#include "ant/grid.h"
+#include "ant/linear_algebra/matrix.h"
 
 namespace collage_maker {
 
 using namespace std;
 
 template<class T>
-using Grid = ant::d2::grid::Grid<T>;
+using Grid = ant::grid::Grid<T>;
 using MutMatView = ant::linalg::MutableMatrixView<int>;
 using MatView = ant::linalg::MatrixView<int>;
 using Mat = ant::linalg::Matrix<int>;
-using Size = ant::d2::grid::Size;
+using Size = ant::grid::Size;
 using Index = ant::Index;
 using Count = ant::Count;
-using Region = ant::d2::grid::Region;
+using Region = ant::grid::Region;
 using Int = ant::Int;
-using Position = ant::d2::grid::Position;
-using ant::d2::grid::MaxEmptyRegions;
+using Position = ant::grid::Position;
+using ant::grid::MaxEmptyRegions;
 
 // place for statics
 extern default_random_engine RNG;
@@ -117,6 +119,7 @@ Position scalePosition(const Position& original_p, const Size& origional_size, c
 int scaleSmart(const Position& original_p, const Size& original_s, const Mat& m);    
 Mat scaleSmart(const Mat& source, const Size& size);    
 Mat scaleSilly(const Mat& source, const Size& size);
+Mat scaleSilly_2(const Mat& source, const Size& size);
 // better create function wtf
 Mat scalePrecise(const Mat& source, const Size& size);    
 
@@ -125,6 +128,7 @@ int score(const Mat& source, const MatView& target_view);
 int score(const Mat& source, const Position& pos, const Mat& target);
 int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target);
 int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target);
+
 
 vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original_size, Size size);
 
@@ -150,22 +154,15 @@ vector<int> formatCollage(const map<Index, Region>& regions);
 
 
 
-struct Base {
+struct Composer {
     
-    void init(shared_ptr<const Mat> target, shared_ptr<const SourceMats> source) {
-        target_ = target;
-        source_ = source;
-    }
+    struct Item {
+        Index index;
+        Region region;
+    };
     
-    virtual void compose() = 0;
-    virtual double score() const = 0;
-    virtual vector<pair<Index, Region>> collage() const = 0;
-    
-    shared_ptr<const Mat> target_;
-    shared_ptr<const SourceMats> source_;
-
+    virtual vector<Item> compose(shared_ptr<Mat> target, shared_ptr<SourceMats> source) = 0;
 };
-
 
 
 }

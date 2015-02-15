@@ -9,49 +9,57 @@
 #ifndef __MAX_RECT_H__
 #define __MAX_RECT_H__
 
-#include "solver.h"
+#include <cmath>
+
+#include "solver.hpp"
 
 namespace collage_maker {
-    
-namespace max_rect {
 
-struct Naive : collage_maker::Base {
-    using collage_maker::Base::compose; 
+//
+// Scale (mat, size)
+// Score (mat, mat)  
+template<class Scale, class Score>
+struct MaxRect : Composer {
     
-    map<Index, Region> compose() override {
-        map<Index, Region> result;
-        score_ = 0;
-        Mat pseudo_target = scaleSmart(target_, pseudo_size_);
+    vector<Item> compose(shared_ptr<Mat> target_ptr, shared_ptr<SourceMats> source_ptr) override {
+        auto& target = *target_ptr; 
+        auto& source = *source_ptr;
         
-        vector<Index> unused_source(source_.size());
+        score_ = 0;
+        Mat pseudo_target = scaleSmart(target, pseudo_size_);
+        
+        vector<Index> unused_source(source.size());
         std::iota(unused_source.begin(), unused_source.end(), 0);
         
-        ant::d2::grid::MaxEmptyRegions empty_regions(
+        ant::grid::MaxEmptyRegions empty_regions(
                 0, 0, (Int)pseudo_target.row_count(), (Int)pseudo_target.col_count());
         
-        while (!empty_regions.max_empty_regions().empty() && !unused_source.empty()) {
+        while (!empty_regions.max_empty_regions().empty()) {
+            assert(!unused_source.empty());
             Index i = uniform_int_distribution<>(0, (Int)empty_regions.max_empty_regions().size()-1)(RNG);
             const Region& r = empty_regions.max_empty_regions()[i]; 
             
             Index best_i = unused_source.size();
             double best_local_score = numeric_limits<double>::max(), local_score;
             Size best_local_size(1, 1);
+            // trying to insert unused_source into this region
             for (Index i : unused_source) {
-                Int row_count = min(r.row_count(), (Int)source_[i].row_count());
-                Int col_count = min(r.col_count(), (Int)source_[i].col_count());
-                
-                if (row_count < source_[i].row_count() || col_count < source_[i].col_count()) {
-                    Mat s = scaleSilly(source_[i], Size(row_count, col_count));
-                    local_score = ::collage_maker::score(s, Position(r.row_begin(), r.col_begin()), pseudo_target);
+                if (r.row_count() < source[i].row_count() || r.col_count() < source[i].col_count()) {
+                    Int row_count = std::min(r.row_count(), (Int)source[i].row_count());
+                    Int col_count = std::min(r.col_count(), (Int)source[i].col_count());
+                    
+                    Scale()
                 } else {
-                    local_score = ::collage_maker::score(source_[i], Position(r.row_begin(), r.col_begin()), pseudo_target);
-                }
+                    MatView tv(pseudo_target, )
+                    local_score = Score()
+                }   
                 if (local_score/(row_count*col_count) < best_local_score/(best_local_size.row*best_local_size.col)) {
                     best_i = i;
                     best_local_score = local_score;
                     best_local_size.set(row_count, col_count);
                 }
             }
+            
             Region reg(r.position, best_local_size);
             score_ += best_local_score;
             
@@ -67,28 +75,15 @@ struct Naive : collage_maker::Base {
         
         vector<Index> is;
         vector<Region> rs;        
-        tie(is, rs) = ant::zip(result);
-        rs = scaleInnerRegions(rs, pseudo_size_, target_.size());
+        tie(is, rs) = ant::Zip(result);
+        rs = scaleInnerRegions(rs, pseudo_size_, target.size());
         for (auto i = 0; i < result.size(); ++i) {
             result[is[i]] = rs[i];
         }
-        score_ = sqrt(::collage_maker::scoreSmart(result, source_, target_)/target_.element_count());
-        return result;
+        score_ = sqrt(::collage_maker::scoreSmart(result, source, target)/target.element_count());
     }
-    
-    double score() const override {
-        return score_;
-    }
-    
-    void set_pseudo_size(const Size pseudo_size) {
-        pseudo_size_ = pseudo_size;
-    }
-    
-    double score_;
-    Size pseudo_size_;
 };
-
-}
+    
     
 }
 
