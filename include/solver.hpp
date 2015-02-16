@@ -141,12 +141,12 @@ int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCo
 int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target);
     
 template<class Scale>
-int score(const vector<Item>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target, Scale scale) {
-    int total_score = 0;
+double score(const vector<Item>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target, Scale scale) {
+    double total_score = 0;
     for (auto& i : regions) {
-        score(scale(source[i.index], i.region.size), i.region.position, target);
+        total_score += score(scale(source[i.index], i.region.size), i.region.position, target);
     }
-    return total_score;
+    return sqrt(total_score / target.element_count());
     
 }
 
@@ -172,6 +172,8 @@ using SourceMats = array<Mat, kSourceImageCount>;
 void initData(const vector<int>& data, SourceMats& source, Mat& target);
 vector<int> formatCollage(const map<Index, Region>& regions);
 vector<int> formatCollage(const vector<Item>& regions);
+
+bool isValid(vector<Item> items);
 
 
 struct Composer {

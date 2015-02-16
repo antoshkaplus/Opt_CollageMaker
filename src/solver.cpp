@@ -288,5 +288,16 @@ vector<int> formatCollage(const vector<Item>& regions) {
     return result;
 }
 
+bool isValid(vector<Item> items) {
+    for (int i = 0; i < items.size(); ++i) {
+        for (int j = i+1; j < items.size(); ++j) {
+            if (items[i].region.hasIntersection(items[j].region)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 
 }
