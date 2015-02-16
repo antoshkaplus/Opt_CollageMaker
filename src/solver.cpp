@@ -194,7 +194,6 @@ int score(const Mat& source, const Position& pos, const Mat& target) {
 int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target) {
     double total_score = 0;
     for (auto& p : regions) {
-        source[7];
         Mat t = scaleSmart(source[p.first], p.second.size);
         total_score += score(t, p.second.position, target);
     }
@@ -210,9 +209,6 @@ int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCo
     }
     return total_score;
 }
-
-
-
 
 
 vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original_size, Size size) {
@@ -269,6 +265,20 @@ vector<int> formatCollage(const map<Index, Region>& regions) {
     for (auto p : regions) {
         auto i = p.first;
         const auto& r = p.second;
+        if (r.isEmpty()) continue;
+        result[i*4]   = r.row_begin();
+        result[i*4+1] = r.col_begin();
+        result[i*4+2] = r.row_end()-1;
+        result[i*4+3] = r.col_end()-1;
+    }
+    return result;
+}
+
+vector<int> formatCollage(const vector<Item>& regions) {
+    vector<int> result(kSourceImageCount*4, -1);
+    for (auto p : regions) {
+        auto i = p.index;
+        const auto& r = p.region;
         if (r.isEmpty()) continue;
         result[i*4]   = r.row_begin();
         result[i*4+1] = r.col_begin();

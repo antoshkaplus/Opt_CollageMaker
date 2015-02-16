@@ -14,11 +14,19 @@
 #-Djava.awt.headless=true
 import os
 
-for i in range(0, 100):
-    os.system(r"java -Djava.awt.headless=true -jar CollageMakerVis.jar -exec ./../DerivedData/CollageMaker/Build/Products/Release/CollageMaker"
-          r" -target ./dataset/300px -source ./dataset/100px -novis -seed " + str(i) + " >> answer_12.txt ")
-    
+#for i in range(0, 100):
+#    os.system(r"java -Djava.awt.headless=true -jar CollageMakerVis.jar -exec 'python invoker.py'"
+#          r" -target ./dataset/300px -source ./dataset/100px -novis -seed " + str(i) + " >> answer_12.txt ")
+
+os.system(r"java -jar CollageMakerVis.jar -exec 'python invoker.py'"
+          r" -target ../dataset/300px -source ../dataset/100px")
+#-Djava.awt.headless=true
     
 #for i in [200]:
 #    os.system(r"java -jar CollageMakerVis.jar -exec ./../DerivedData/CollageMaker/Build/Products/Release/CollageMaker"
 #          r" -target ./dataset/300px -source ./dataset/100px -seed " + str(i))
+
+
+
+#i need another script that will read input stream,
+#execute program and write to output stream

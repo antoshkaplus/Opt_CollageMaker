@@ -11,7 +11,7 @@
 
 #include "utility.hpp"
 #include "solver.hpp"
-//#include "max_rect.hpp"
+#include "max_rect.hpp"
 
 #include "gtest/gtest.h"
 
@@ -40,8 +40,23 @@ TEST(Scale, Silly) {
     cout << "improved: " << clock() - t_0 << endl;
 }
 
-TEST(MaxRect, ScaleFunction) {
-
+// checking how much different silly and smart scaling
+TEST(Scale, SmartSillyComparison) {
+    ifstream input("input.txt");
+    vector<int> in = readInput(input);
+    SourceMats source;
+    Mat target;
+    initData(in, source, target);
+    default_random_engine rng;
+    for (int i = 0; i < source.size(); ++i) {
+        auto& s = source[i];
+        uniform_int_distribution<> row_distr(20, s.row_count() + 1);
+        uniform_int_distribution<> col_distr(20, s.col_count() + 1);
+        Size newSize(row_distr(rng), col_distr(rng));
+        Mat m_smart = scaleSmart(s, newSize);
+        Mat m_silly = scaleSilly_2(s, newSize);
+        cout << sqrt(ant::linalg::sum(ant::linalg::pow(m_smart - m_silly, 2)) / newSize.cell_count()) << endl;
+    }
 }
 
 // smart and precise scaling should be the same
@@ -62,6 +77,19 @@ TEST(Scale, SmartPreciseComparison) {
         Mat m_precise = scalePrecise(s, newSize);
         ASSERT_TRUE(ant::linalg::any(m_smart - m_precise == 0));
     }
+}
+
+TEST(Score, SmartSillyScoreComparison) {
+    ifstream input("input.txt");
+    vector<int> in = readInput(input);
+    SourceMats source;
+    Mat target;
+    initData(in, source, target);
+    MaxRect max_rect;
+    auto items = max_rect.compose(target, source);
+    int s_silly = score(items, source, target, scaleSilly_2);
+    int s_smart = score<decltype(scaleSilly_2)>(items, source, target, scaleSmart);
+    ASSERT_EQ(s_silly, s_smart);
 }
 
 

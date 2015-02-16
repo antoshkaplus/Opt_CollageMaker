@@ -115,6 +115,16 @@ struct CoordinateTransformation {
 };
 
     
+struct Item {
+    Index index;
+    Region region;
+    
+    Item(Index index, Region region) 
+    : index(index), region(region) {}
+    
+};
+
+
 Position scalePosition(const Position& original_p, const Size& origional_size, const Size& size);
 int scaleSmart(const Position& original_p, const Size& original_s, const Mat& m);    
 Mat scaleSmart(const Mat& source, const Size& size);    
@@ -126,9 +136,19 @@ Mat scalePrecise(const Mat& source, const Size& size);
 int score(const Mat& source, const Mat& target);
 int score(const Mat& source, const MatView& target_view);
 int score(const Mat& source, const Position& pos, const Mat& target);
+
 int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target);
 int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target);
-
+    
+template<class Scale>
+int score(const vector<Item>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target, Scale scale) {
+    int total_score = 0;
+    for (auto& i : regions) {
+        score(scale(source[i.index], i.region.size), i.region.position, target);
+    }
+    return total_score;
+    
+}
 
 vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original_size, Size size);
 
@@ -151,17 +171,11 @@ using SourceMats = array<Mat, kSourceImageCount>;
 
 void initData(const vector<int>& data, SourceMats& source, Mat& target);
 vector<int> formatCollage(const map<Index, Region>& regions);
-
+vector<int> formatCollage(const vector<Item>& regions);
 
 
 struct Composer {
-    
-    struct Item {
-        Index index;
-        Region region;
-    };
-    
-    virtual vector<Item> compose(shared_ptr<Mat> target, shared_ptr<SourceMats> source) = 0;
+    virtual vector<Item> compose(const Mat& target, const SourceMats& source) = 0;
 };
 
 
