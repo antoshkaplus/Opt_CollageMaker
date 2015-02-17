@@ -175,9 +175,9 @@ vector<int> formatCollage(const vector<Item>& regions);
 
 bool isValid(vector<Item> items);
 
-
 struct Composer {
     virtual vector<Item> compose(const Mat& target, const SourceMats& source) = 0;
+    virtual ~Composer() {}
 };
 
 

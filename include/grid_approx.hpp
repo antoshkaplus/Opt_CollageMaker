@@ -19,7 +19,6 @@
 
 namespace collage_maker {
 
-namespace grid_approx {
 
 // i - who, (h, w) - what , (r, c) - where in target     
 //using SourceScore = array<Grid<Grid<double>>, kSourceImageCount>;
@@ -131,33 +130,68 @@ private:
     valarray<double> data_;
 };
 
+template<int kCellSize>
+struct GridApprox {
 
-
-
-struct Base : collage_maker::Base {
+    struct Result {
+        Size target_size;
+        SourceScore source_score;
+    };
     
-    Base() : cell_size_(25) {}
+    // to use this one we need to put inside target, cell size, sources,
+    // should return new grid target SIZE, and sources data structure, with score for each size and location (placement)
     
-    void initPseudoTarget() {
-        Size s = target_->size();
-        if (s.row%cell_size_ != 0) {
-            s.row += - (Int)(s.row%cell_size_) + (Int)cell_size_;
-        }
-        if (s.col%cell_size_ != 0) {
-            s.col += - (Int)(s.col%cell_size_) + (Int)cell_size_;
-        }
-        pseudo_target_ = scaleSmart(*target_, s);
-        target_cell_count_.set(s.row/cell_size_, s.col/cell_size_);
+    Result g(const Mat& target, const SourceMats& source) {
+        
+        return;
     }
     
-    void initSourceScore() {
-        Int 
-        T_H = target_cell_count_.row,
-        T_W = target_cell_count_.col;
-        Int 
-        S_MAX_H = 4,
-        S_MAX_W = 4;
-        auto& source = *source_;
+    vector<Item> c(const vector<Placement>& places, const Mat& target, const SourceMats& source) {
+        return;
+    }
+};
+
+
+// may have sence but should be rewritten first
+// implementation is too dirty
+//
+//struct Base : Composer {
+//
+//private:
+//    double score_;
+//    const size_t cell_size_;
+//    Mat pseudo_target_;
+//    Size target_cell_count_;
+//    unique_ptr<SourceScore> source_score_;
+//    vector<pair<Index, Region>> collage_;
+//    
+//public:    
+//    Base() : cell_size_(25) {}
+//    
+//    void initPseudoTarget() {
+//        Size s = target_->size();
+//        if (s.row%cell_size_ != 0) {
+//            s.row += - (Int)(s.row%cell_size_) + (Int)cell_size_;
+//        }
+//        if (s.col%cell_size_ != 0) {
+//            s.col += - (Int)(s.col%cell_size_) + (Int)cell_size_;
+//        }
+//        pseudo_target_ = scaleSmart(*target_, s);
+//        target_cell_count_.set(s.row/cell_size_, s.col/cell_size_);
+//    }
+//    
+//    void initSourceScore() {
+//        Int 
+//        T_H = target_cell_count_.row,
+//        T_W = target_cell_count_.col;
+//        
+//        // source max w and h
+//        // based on cell_size = 25
+//        Int 
+//        S_MAX_H = 4,
+//        S_MAX_W = 4;
+//        // resizeing containter to put inside everything
+//        auto& source = *source_;
 //        for (auto i = 0; i < kSourceImageCount; ++i) {
 //            Size sz(source[i].row_count()/cell_size_, source[i].col_count()/cell_size_);
 //            (*source_score_)[i].resize(sz);
@@ -167,26 +201,34 @@ struct Base : collage_maker::Base {
 //                }
 //            }
 //        }
-        
-        if (T_H*T_W > 12*9) {
-            for (auto h = 0; h < S_MAX_H; ++h) {
-                for (auto w = 0; w < S_MAX_W; ++w) {
-                    Grid<Mat> target_bits(T_H-h, T_W-w);
-                    Size sz((h+1)*cell_size_/5, (w+1)*cell_size_/5);
-                    for (auto r = 0; r < T_H-h; ++r) {
-                        for (auto c = 0; c < T_W-w; ++c) {
-                            auto& tb = target_bits(r, c);
-                            tb.set_size(sz);
-                            for (auto rr = 0; rr < sz.row; ++rr) {
-                                for (auto cc = 0; cc < sz.col; ++cc) {
-                                    tb(rr, cc) = ant::linalg::sum(target_->submat(
-                                            r*cell_size_ + rr*5, 
-                                            c*cell_size_ + cc*5,
-                                            5, 5))/25.;
-                                }
-                            }
-                        }
-                    }
+//        // if many elements in matrix
+//        // based on tarhet size???
+//        
+//        // how big target is
+//        
+//        if (T_H*T_W > 12*9) {
+//            for (auto h = 0; h < S_MAX_H; ++h) {
+//                for (auto w = 0; w < S_MAX_W; ++w) {
+//                    /// place it here to reuse.
+//                    
+//                    // dividing by 5 each one and take average
+//                    Grid<Mat> target_bits(T_H-h, T_W-w);
+//                    Size sz((h+1)*cell_size_/5, (w+1)*cell_size_/5);
+//                    // will reuse all target submats
+//                    for (auto r = 0; r < T_H-h; ++r) {
+//                        for (auto c = 0; c < T_W-w; ++c) {
+//                            auto& tb = target_bits(r, c);
+//                            tb.set_size(sz);
+//                            for (auto rr = 0; rr < sz.row; ++rr) {
+//                                for (auto cc = 0; cc < sz.col; ++cc) {
+//                                    tb(rr, cc) = ant::linalg::sum(target_->submat(
+//                                            r*cell_size_ + rr*5, 
+//                                            c*cell_size_ + cc*5,
+//                                            5, 5))/25.;
+//                                }
+//                            }
+//                        }
+//                    }
 //                    for (auto i = 0; i < kSourceImageCount; ++i) {
 //                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
 //                        Mat m = scaleSmart(source[i], sz);
@@ -197,25 +239,25 @@ struct Base : collage_maker::Base {
 //                            }
 //                        }
 //                    }
-                
-                }
-            }
-            
-        }
-        else {
-            for (auto h = 0; h < S_MAX_H; ++h) {
-                for (auto w = 0; w < S_MAX_W; ++w) {
-                    Grid<Mat> target_bits(T_H-h, T_W-w);
-                    Size sz((h+1)*cell_size_, (w+1)*cell_size_);
-                    for (auto r = 0; r < T_H-h; ++r) {
-                        for (auto c = 0; c < T_W-w; ++c) {
-                            Position pos(r*cell_size_, c*cell_size_);
-                            target_bits(r, c).set_size({
-                                static_cast<Int>((h+1)*cell_size_), 
-                                static_cast<Int>((w+1)*cell_size_)});
-                            target_bits(r, c) = target_->submat(pos, sz);
-                        }
-                    }
+//                
+//                }
+//            }
+//            
+//        }
+//        else {
+//            for (auto h = 0; h < S_MAX_H; ++h) {
+//                for (auto w = 0; w < S_MAX_W; ++w) {
+//                    Grid<Mat> target_bits(T_H-h, T_W-w);
+//                    Size sz((h+1)*cell_size_, (w+1)*cell_size_);
+//                    for (auto r = 0; r < T_H-h; ++r) {
+//                        for (auto c = 0; c < T_W-w; ++c) {
+//                            Position pos(r*cell_size_, c*cell_size_);
+//                            target_bits(r, c).set_size({
+//                                static_cast<Int>((h+1)*cell_size_), 
+//                                static_cast<Int>((w+1)*cell_size_)});
+//                            target_bits(r, c) = target_->submat(pos, sz);
+//                        }
+//                    }
 //                    for (auto i = 0; i < kSourceImageCount; ++i) {
 //                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
 //                        Mat m = scaleSmart(source[i], sz);
@@ -225,17 +267,17 @@ struct Base : collage_maker::Base {
 //                            }
 //                        }
 //                    }
-                    
-                }
-            }
-
-        
-        
-        }
-        
-    }
-    
-    void compose() override {
+//                    
+//                }
+//            }
+//
+//        
+//        
+//        }
+//        
+//    }
+//    
+//    vector<Item> compose(const Mat& target, const SourceMats& source) override {
 //        initPseudoTarget();
 //        initSourceScore();
 //        map<Index, Region> result = algorithm_->compose(source_score_, target_cell_count_);
@@ -248,28 +290,14 @@ struct Base : collage_maker::Base {
 //        }
 //        score_ = sqrt((double)::collage_maker::scoreSmart(result, source_, target_)/target_->element_count());
 //        return result;
-    }
-    
-    double score() const override {
-        return score_;
-    }
-    
-    void set_algorithm(unique_ptr<algorithm::Base> algorithm) {
-        algorithm_ = move(algorithm);
-    }
-    
-    virtual ~Base() {}
-    
-    double score_;
-    unique_ptr<algorithm::Base> algorithm_;
-    const size_t cell_size_;
-    Mat pseudo_target_;
-    Size target_cell_count_;
-    unique_ptr<SourceScore> source_score_;
-    vector<pair<Index, Region>> collage_;
-};
+//    }
+//    
+//    void set_algorithm(unique_ptr<algorithm::Base> algorithm) {
+//        algorithm_ = move(algorithm);
+//    }
+//    
+//};
 
-}
 
 }
 

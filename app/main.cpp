@@ -15,6 +15,8 @@
 #include "max_rect.hpp"
 #include "max_rect_2.hpp"
 #include "max_rect_3.hpp"
+#include "max_rect_4.hpp"
+#include "grid_approx.hpp"
 
 using namespace std;
 using namespace collage_maker;
@@ -23,7 +25,7 @@ using namespace collage_maker;
 int main(int argc, const char * argv[]) {
     ifstream input("input.txt");
     auto v = readInput(input);
-    MaxRect_3 solver;
+    MaxRect_4 solver;
     SourceMats source;
     Mat target;
     initData(v, source, target);
