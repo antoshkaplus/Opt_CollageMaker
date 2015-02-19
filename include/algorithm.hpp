@@ -153,6 +153,7 @@ struct BalanceQueue : Queue {
                                 Index, 
                                 array<Index, kPlacementsPerCell>, 
                                 function<bool(Index, Index)> >;
+                                
         Grid<unique_ptr<PrQueue>> placements;
         // returning max is good
         auto pl_comp = [&](Index i_0, Index i_1) {
@@ -164,29 +165,29 @@ struct BalanceQueue : Queue {
             }
         }
         
-//        for (auto r = 0; r < target_size.row; ++r) {
-//            for (auto c = 0; c < target_size.col; ++c) {
-//                for (auto h = 1; h <= max_source_size.row; ++h) {
-//                    for (auto w = 1; w <= max_source_size.col; ++w) {
-//                        for (auto i = 0; i < kSourceImageCount; ++i) {
-//                            Index index = source_score.score_id({r, c}, {h, w}, i);
-//                            if (!source_score.isInitialized(index)) continue;
-//                            for (auto rr = r; rr < r+h; ++rr) {
-//                                for (auto cc = c; cc < c+w; ++cc) {
-//                                    if (placements(rr, cc)->size()
-//                                        < kPlacementsPerCell ||
-//                                        source_score.score(placements(rr, cc)->top())
-//                                        > source_score.score(index)) {
-//                                        placements(rr, cc)->pop();
-//                                        placements(rr, cc)->push(i);
-//                                    }
-//                                }
-//                            } 
-//                        } 
-//                    }
-//                }
-//            }
-//        }
+        for (auto r = 0; r < target_size.row; ++r) {
+            for (auto c = 0; c < target_size.col; ++c) {
+                for (auto h = 1; h <= max_source_size.row; ++h) {
+                    for (auto w = 1; w <= max_source_size.col; ++w) {
+                        for (auto i = 0; i < kSourceImageCount; ++i) {
+                            Index index = source_score.score_id({r, c}, {h, w}, i);
+                            if (!source_score.isInitialized(index)) continue;
+                            for (auto rr = r; rr < r+h; ++rr) {
+                                for (auto cc = c; cc < c+w; ++cc) {
+                                    if (placements(rr, cc)->size()
+                                        < kPlacementsPerCell ||
+                                        source_score.score(placements(rr, cc)->top())
+                                        > source_score.score(index)) {
+                                        placements(rr, cc)->pop();
+                                        placements(rr, cc)->push(i);
+                                    }
+                                }
+                            } 
+                        } 
+                    }
+                }
+            }
+        }
         vector<Index> all_indices;
 //        all_indices.reserve(target_size_.cell_count()*kPlacementsPerCell);
 //        for (auto& pq : placements) {
@@ -238,28 +239,28 @@ struct BalanceQueue : Queue {
             vector<Index> queue_indices;
             Int covered_area = 0;
             double score = 0;
-//            for (auto i = 0; i < source_placement_queue_.size(); ++i) {
-//                auto pl = source_score.placement(source_placement_queue_[i]);
-//                // can use
-//                if (used[p.i]) continue;
-//                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
-//                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
-//                        if (covering(r, c)) goto next;
-//                    }
-//                }
-//                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
-//                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
-//                        covering(r, c) = true;
-//                        cell_score(r, c) = source_score.score(source_placement_queue_[i])/pl.size.cell_count();
-//                    }
-//                }
-//                queue_indices.push_back(i);
-//                covered_area += p.s.cell_count();
-//                score += p.score;
-//                used[p.i] = true;
-//                
-//                if (covered_area == target_size.cell_count()) break;
-//            }
+            for (auto i = 0; i < source_placement_queue_.size(); ++i) {
+                auto pl = source_score.placement(source_placement_queue_[i]);
+                // can use
+                if (used[p.i]) continue;
+                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
+                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
+                        if (covering(r, c)) goto next;
+                    }
+                }
+                for (auto r = pl.position.row; r < pl.positon.row + pl.size.row; ++r) {
+                    for (auto c = pl.position.col; c < pl.position.col + pl.size.col; ++c) {
+                        covering(r, c) = true;
+                        cell_score(r, c) = source_score.score(source_placement_queue_[i])/pl.size.cell_count();
+                    }
+                }
+                queue_indices.push_back(i);
+                covered_area += p.s.cell_count();
+                score += p.score;
+                used[p.i] = true;
+                
+                if (covered_area == target_size.cell_count()) break;
+            }
             
             // now we got solution. time to weight it
         }

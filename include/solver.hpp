@@ -30,6 +30,7 @@ using Count = ant::Count;
 using Region = ant::grid::Region;
 using Int = ant::Int;
 using Position = ant::grid::Position;
+using Indent = ant::grid::Indent;
 using ant::grid::MaxEmptyRegions;
 
 // place for statics

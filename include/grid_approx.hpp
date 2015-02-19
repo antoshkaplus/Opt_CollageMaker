@@ -52,6 +52,22 @@ struct Placement {
 
 
 struct SourceScore {
+    
+private:
+    const Size target_size_;
+    const Size max_source_size_;
+    
+    const Count data_element_count_ =   target_size_.cell_count()
+    *max_source_size_.cell_count()
+    *kSourceImageCount; 
+    const Int p_row_factor_0{static_cast<Int>(data_element_count_/target_size_.row)};
+    const Int p_col_factor_1{p_row_factor_0/target_size_.col};
+    const Int s_row_factor_2{p_col_factor_1/max_source_size_.row};
+    const Int s_col_factor_3{s_row_factor_2/max_source_size_.col};
+    
+    valarray<double> data_;
+
+public:
     SourceScore(const Size& target_size, const Size& max_source_size) 
     :   data_(data_element_count_, numeric_limits<double>::max()),
         target_size_(target_size),
@@ -114,39 +130,113 @@ private:
                 + (s.row-1)*s_row_factor_2 + (s.col-1)*s_col_factor_3
                 + i;
     }
-    
-    
-    const Size target_size_;
-    const Size max_source_size_;
-    
-    const Count data_element_count_ =   target_size_.cell_count()
-                                        *max_source_size_.cell_count()
-                                        *kSourceImageCount; 
-    const Int p_row_factor_0{static_cast<Int>(data_element_count_/target_size_.row)};
-    const Int p_col_factor_1{p_row_factor_0/target_size_.col};
-    const Int s_row_factor_2{p_col_factor_1/max_source_size_.row};
-    const Int s_col_factor_3{s_row_factor_2/max_source_size_.col};
-    
-    valarray<double> data_;
 };
+
+
+struct GridSourceScore {
+public:
+    struct Item {
+        // can use float
+        double score;
+        int index;
+    };
+
+private:
+    
+    // position, size, Item
+    Grid<Grid<vector<Item>>> items_;
+ 
+public:
+    
+    
+    GridSourceScore(Size target_size, Size max_source_size) {
+        items_.resize(target_size);
+        for (int r = 0; r < target_size.row; ++r) {
+            for (int c = 0; c < target_size.col; ++c) {
+                items_.resize(min(max_source_size, target_size - Size{r, c}));
+            }
+        }
+    }
+    
+    const vector<Item>& items(const Position& pos, const Size& size) const {
+        return items_[pos](size.row - 1, size.col - 1);
+    }
+    
+    void AddItem(const Position& pos, const Size& size, const Item& item) {
+        items_[pos](size.row - 1, size.col - 1);
+    }
+    
+};
+
 
 template<int kCellSize>
 struct GridApprox {
 
     struct Result {
         Size target_size;
-        SourceScore source_score;
+        GridSourceScore source_score;
     };
     
     // to use this one we need to put inside target, cell size, sources,
     // should return new grid target SIZE, and sources data structure, with score for each size and location (placement)
     
-    Result g(const Mat& target, const SourceMats& source) {
+    Result construct(const Mat& target, const SourceMats& source) {
+        int t_h = target.row_count() / kCellSize;
+        int t_w = target.col_count() / kCellSize;
+        int s_max_h = 0;
+        int s_max_w = 0;
+        for (auto& s : source) {
+            int h = s.row_count() / kCellSize;
+            int w = s.col_count() / kCellSize;
+            if (h > s_max_h) s_max_h = h;
+            if (w > s_max_w) s_max_w = w;
+        }
+        Result res;
         
-        return;
+        // should scale target first
+        // then use submat to compute scores
+        
+        for (int r = 0; r < t_h; ++r) {
+            for (int c = 0; c < t_w; ++c) {
+                for (int h = 1; h <= min(s_max_h, t_h - r); ++h) {
+                    for (int w = 1; w <= min(s_max_w, t_w - c); ++w) {
+                        
+                    }
+                }
+            }
+        }
+        
+        
+        
+        for (auto h = 0; h < s_max_h; ++h) {
+            for (auto w = 0; w < s_max_w; ++w) {
+                Grid<Mat> target_bits(T_H-h, T_W-w);
+                Size sz((h+1)*cell_size_, (w+1)*cell_size_);
+                for (auto r = 0; r < T_H-h; ++r) {
+                    for (auto c = 0; c < T_W-w; ++c) {
+                        Position pos(r*cell_size_, c*cell_size_);
+                        target_bits(r, c).set_size({
+                            static_cast<Int>((h+1)*cell_size_), 
+                            static_cast<Int>((w+1)*cell_size_)});
+                        target_bits(r, c) = target_->submat(pos, sz);
+                    }
+                }
+                for (auto i = 0; i < kSourceImageCount; ++i) {
+                    if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
+                    Mat m = scaleSmart(source[i], sz);
+                    for (auto r = 0; r < T_H-h; ++r) {
+                        for (auto c = 0; c < T_W-w; ++c) {
+                            source_score_[i](h, w)(r, c) = (double)::collage_maker::score(m, target_bits(r, c))/(double)(cell_size_*cell_size_);;
+                        }
+                    }
+                }
+                
+            }
+        }
+        return res;
     }
     
-    vector<Item> c(const vector<Placement>& places, const Mat& target, const SourceMats& source) {
+    vector<Item> convert(const vector<Placement>& places, const Mat& target, const SourceMats& source) {
         return;
     }
 };
@@ -245,32 +335,7 @@ struct GridApprox {
 //            
 //        }
 //        else {
-//            for (auto h = 0; h < S_MAX_H; ++h) {
-//                for (auto w = 0; w < S_MAX_W; ++w) {
-//                    Grid<Mat> target_bits(T_H-h, T_W-w);
-//                    Size sz((h+1)*cell_size_, (w+1)*cell_size_);
-//                    for (auto r = 0; r < T_H-h; ++r) {
-//                        for (auto c = 0; c < T_W-w; ++c) {
-//                            Position pos(r*cell_size_, c*cell_size_);
-//                            target_bits(r, c).set_size({
-//                                static_cast<Int>((h+1)*cell_size_), 
-//                                static_cast<Int>((w+1)*cell_size_)});
-//                            target_bits(r, c) = target_->submat(pos, sz);
-//                        }
-//                    }
-//                    for (auto i = 0; i < kSourceImageCount; ++i) {
-//                        if (h >= source_score_[i].row_count() || w >= source_score_[i].col_count()) continue;
-//                        Mat m = scaleSmart(source[i], sz);
-//                        for (auto r = 0; r < T_H-h; ++r) {
-//                            for (auto c = 0; c < T_W-w; ++c) {
-//                                source_score_[i](h, w)(r, c) = (double)::collage_maker::score(m, target_bits(r, c))/(double)(cell_size_*cell_size_);;
-//                            }
-//                        }
-//                    }
-//                    
-//                }
-//            }
-//
+//     //
 //        
 //        
 //        }
