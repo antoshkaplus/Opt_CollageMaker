@@ -120,6 +120,8 @@ struct Item {
     Index index;
     Region region;
     
+    Item() {}
+    
     Item(Index index, Region region) 
     : index(index), region(region) {}
     
@@ -174,7 +176,8 @@ void initData(const vector<int>& data, SourceMats& source, Mat& target);
 vector<int> formatCollage(const map<Index, Region>& regions);
 vector<int> formatCollage(const vector<Item>& regions);
 
-bool isValid(vector<Item> items);
+bool isValid(vector<Item> items, Size target_size);
+bool isValid(vector<Region> regions, Size target_size);
 
 struct Composer {
     virtual vector<Item> compose(const Mat& target, const SourceMats& source) = 0;

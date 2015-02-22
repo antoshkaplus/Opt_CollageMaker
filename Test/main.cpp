@@ -12,6 +12,7 @@
 #include "utility.hpp"
 #include "solver.hpp"
 #include "max_rect.hpp"
+#include "grid_approx.hpp"
 
 #include "gtest/gtest.h"
 
@@ -92,10 +93,39 @@ TEST(Score, SmartSillyScoreComparison) {
     ASSERT_EQ(s_silly, s_smart);
 }
 
+TEST(GridSourceScore, Iterator) {
+    ifstream input("input.txt");
+    vector<int> in = readInput(input);
+    SourceMats source;
+    Mat target;
+    initData(in, source, target);
+    GridApprox<25> approx;
+    auto score = approx.construct(target, source);
+    auto& pos = score.items(); 
+    auto it = score.begin();
+    for (int r = 0; r < pos.row_count(); ++r) {
+        for (int c = 0; c < pos.col_count(); ++c) {
+            auto& sz = pos(r, c); 
+            ASSERT_EQ(sz(0, 0).size(), kSourceImageCount) << "point: " << r << " " << c;
+            for (int h = 0; h < sz.row_count(); ++h) {
+                for (int w = 0; w < sz.col_count(); ++w) {
+                    for (auto a : sz(h, w)) {
+                        auto a_it = *it;
+                        ASSERT_TRUE(a == a_it.second);
+                        ++it;
+                    }
+                }
+            }
+        }
+    }
+    
+    
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    //::testing::FLAGS_gtest_filter = "MaxRect*";
+    ::testing::FLAGS_gtest_filter = "GridSourceScore*";
     return RUN_ALL_TESTS();
 
 //    assert(reg == Transformation::fromTopLeftGoesDown(Transformation::toTopLeftGoesDown(reg, sz), sz.swapped()));

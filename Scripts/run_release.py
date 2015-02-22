@@ -11,16 +11,20 @@
   Seed = 10, N = 69
 
 """
-#-Djava.awt.headless=true
+
 import os
+
+os.system(r"java -jar CollageMakerVis.jar -exec 'python invoker.py'"
+          r" -target ../dataset/300px -source ../dataset/100px")
+
+
+#-Djava.awt.headless=true
+
 
 #for i in range(0, 100):
 #    os.system(r"java -Djava.awt.headless=true -jar CollageMakerVis.jar -exec 'python invoker.py'"
 #          r" -target ./dataset/300px -source ./dataset/100px -novis -seed " + str(i) + " >> answer_12.txt ")
 
-os.system(r"java -jar CollageMakerVis.jar -exec 'python invoker.py'"
-          r" -target ../dataset/300px -source ../dataset/100px")
-#-Djava.awt.headless=true
     
 #for i in [200]:
 #    os.system(r"java -jar CollageMakerVis.jar -exec ./../DerivedData/CollageMaker/Build/Products/Release/CollageMaker"

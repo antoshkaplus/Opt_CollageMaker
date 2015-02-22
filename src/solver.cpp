@@ -288,10 +288,49 @@ vector<int> formatCollage(const vector<Item>& regions) {
     return result;
 }
 
-bool isValid(vector<Item> items) {
+bool isValid(vector<Item> items, Size target_size) {
     for (int i = 0; i < items.size(); ++i) {
         for (int j = i+1; j < items.size(); ++j) {
             if (items[i].region.hasIntersection(items[j].region)) {
+                return false;
+            }
+        }
+    }
+    Mat filling(target_size);
+    filling.fill(false);
+    for (auto i : items) {
+        for (auto p : i.region) {
+            filling[p] = true;
+        }
+    }
+    for (int r = 0; r < filling.row_count(); ++r) {
+        for (int c = 0; c < filling.col_count(); ++c) {
+            if (!filling(r, c)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool isValid(vector<Region> regions, Size target_size) {
+    for (int i = 0; i < regions.size(); ++i) {
+        for (int j = i+1; j < regions.size(); ++j) {
+            if (regions[i].hasIntersection(regions[j])) {
+                return false;
+            }
+        }
+    }
+    Mat filling(target_size);
+    filling.fill(false);
+    for (auto r : regions) {
+        for (auto p : r) {
+            filling[p] = true;
+        }
+    }
+    for (int r = 0; r < filling.row_count(); ++r) {
+        for (int c = 0; c < filling.col_count(); ++c) {
+            if (!filling(r, c)) {
                 return false;
             }
         }

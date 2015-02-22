@@ -17,22 +17,43 @@
 #include "max_rect_3.hpp"
 #include "max_rect_4.hpp"
 #include "grid_approx.hpp"
+#include "grid_layout.hpp"
+#include "genetic.hpp"
+#include "ant/core.h"
+
 
 using namespace std;
 using namespace collage_maker;
 
 
 int main(int argc, const char * argv[]) {
-    ifstream input("input.txt");
+    auto pars = ant::command_line_options(argv, argc);
+    string input_path = "input.txt";
+    string output_path = "output.txt";
+    if (pars.count("input") == 1 && pars.count("output") == 1) {  
+        input_path = pars["input"];
+        output_path = pars["output"];
+    }
+    ifstream input(input_path);
+    ofstream output(output_path);
+    
     auto v = readInput(input);
     MaxRect_4 solver;
     SourceMats source;
     Mat target;
     initData(v, source, target);
-    auto items = solver.compose(target, source);
-    assert(isValid(items));
-    cout << score<decltype(scaleSilly)>(items, source, target, scaleSmart) << endl;
-    ofstream output("output.txt");
+    
+    GridApprox<25> approx;
+    GridSourceScore res = approx.construct(target, source);
+    GridLayout layout(1.5);
+    auto places = layout.layout(res);
+    vector<Item> items = approx.convert(places, target, source);
+    
+//    auto items = solver.compose(target, source);
+    
+    assert(isValid(items, target.size()));
+    //cout << score<decltype(scaleSilly)>(items, source, target, scaleSmart) << endl;
+    
     for (int i : formatCollage(items)) {
         output << i << " ";
     } 
