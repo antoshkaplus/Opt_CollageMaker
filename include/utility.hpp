@@ -11,7 +11,7 @@
 
 #include <fstream>
 
-#include <ant>
+#include "ant/core.h"
 
 
 using namespace std;

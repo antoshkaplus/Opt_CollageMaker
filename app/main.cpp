@@ -8,64 +8,56 @@
 
 #include <iostream>
 #include <fstream>
+#include <array>
 
-#include <ant>
+#include "utility.hpp"
+#include "solver.hpp"
+#include "max_rect.hpp"
+#include "max_rect_2.hpp"
+#include "max_rect_3.hpp"
+#include "max_rect_4.hpp"
+#include "grid_approx.hpp"
+#include "grid_layout.hpp"
+#include "genetic.hpp"
+#include "ant/core.h"
 
-#include "grid_approx.h"
-#include "utility.h"
-#include "solver.h"
-//#include "ant_colony.h"
-#include "algorithm.h"
-//#include "max_rect.h"
 
 using namespace std;
 using namespace collage_maker;
 
-//#define GET_DATA
-//#define DEBUG
-#define RELEASE
-
-
-
-struct CollageMaker {
-    vector<int> compose(vector<int>& data) {
-        array<Mat, kSourceImageCount> source;
-        Mat target;
-        initData(data, source, target);
-        
-        
-    }
-};
-
-
 
 int main(int argc, const char * argv[]) {
-#ifdef GET_DATA
-    ofstream out_input(root + "input.txt");
-    auto data = readInput(cin);
-    out_input << data.size() << " ";
-    for (int d : data) out_input << d << " ";
-    out_input.flush();
-#elif defined DEBUG
-    CollageMaker cm;
-    ifstream input(root + "input.txt");
-    auto data = readInput(input);
-    data = cm.compose(data);
-    for (int i = 0; i < data.size(); ++i) {
-        cout << data[i] << endl;
+    auto pars = ant::command_line_options(argv, argc);
+    string input_path = "input.txt";
+    string output_path = "output.txt";
+    if (pars.count("input") == 1 && pars.count("output") == 1) {  
+        input_path = pars["input"];
+        output_path = pars["output"];
     }
-    cout.flush();
-#elif defined RELEASE 
-    CollageMaker cm;
-    auto data = readInput(cin);
-    clock_t t = clock();
-    data = cm.compose(data);
-    //cerr << "time: " << (clock() - t)/CLOCKS_PER_SEC << endl;
-    for (int i = 0; i < data.size(); ++i) {
-        cout << data[i] << endl;
-    }
-    cout.flush();
-#endif
+    ifstream input(input_path);
+    ofstream output(output_path);
+    
+    auto v = readInput(input);
+    MaxRect_4 solver;
+    SourceMats source;
+    Mat target;
+    initData(v, source, target);
+    
+    GridApprox<25> approx;
+    GridSourceScore res = approx.construct(target, source);
+    GridLayout layout(1.5);
+    auto places = layout.layout(res);
+    vector<Item> items = approx.convert(places, target, source);
+    
+//    auto items = solver.compose(target, source);
+    
+    assert(isValid(items, target.size()));
+    //cout << score<decltype(scaleSilly)>(items, source, target, scaleSmart) << endl;
+    
+    for (int i : formatCollage(items)) {
+        output << i << " ";
+    } 
+    
     return 0;
 }
 

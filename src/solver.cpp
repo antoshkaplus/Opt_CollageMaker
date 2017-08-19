@@ -6,7 +6,9 @@
 //  Copyright (c) 2014 Anton Logunov. All rights reserved.
 //
 
-#include "solver.h"
+#include <array>
+
+#include "solver.hpp"
 
 namespace collage_maker {
 
@@ -14,7 +16,7 @@ default_random_engine RNG((unsigned)time(nullptr));
 
 
 
-Position scalePosition(const Position& original_p, const Size& origional_size, const Size& size) {
+ant::grid::Position scalePosition(const ant::grid::Position& original_p, const Size& origional_size, const Size& size) {
     return Position(((double)original_p.row + 0.5)*(size.row)/(origional_size.row), 
                     ((double)original_p.col + 0.5)*(size.col)/(origional_size.col));
 }
@@ -107,7 +109,7 @@ int scaleSmart(const Position& original_p, const Size& original_s, const Mat& m)
         total_color += m(y_1_f, x_1_f)*weight;
         total_weight += weight;
     }
-    return total_color/total_weight;
+    return round(total_color/total_weight);
 }
 
 Mat scaleSmart(const Mat& source, const Size& size) {
@@ -122,6 +124,7 @@ Mat scaleSmart(const Mat& source, const Size& size) {
 
 Mat scaleSilly(const Mat& source, const Size& size) {
     Mat result(size);
+    // try to use sse here
     for (auto r = 0; r < size.row; ++r) {
         for (auto c = 0; c < size.col; ++c) {
             result(r, c) = source[scalePosition({r, c}, size, source.size())];
@@ -131,7 +134,27 @@ Mat scaleSilly(const Mat& source, const Size& size) {
 }
 
 
-// better create function wtf
+Mat scaleSilly_2(const Mat& source, const Size& size) {
+    Mat result(size);
+    static vector<int> rs;
+    static vector<int> cs;
+    rs.resize(size.row);
+    cs.resize(size.col);
+    for (auto r = 0; r < size.row; ++r) {
+        rs[r] = (r + 0.5)*(source.row_count())/(size.row);
+    }
+    for (auto c = 0; c < size.col; ++c) {
+        cs[c] = (c + 0.5)*(source.col_count())/(size.col);
+    }
+    for (auto r = 0; r < size.row; ++r) {
+        for (auto c = 0; c < size.col; ++c) {
+            result(r, c) = source(rs[r], cs[c]);
+        }
+    }
+    return result;
+}
+
+
 Mat scalePrecise(const Mat& source, const Size& size) {
     Size original_size = source.size();
     Mat 
@@ -157,13 +180,16 @@ int score(const Mat& source, const Mat& target) {
     return ant::linalg::sum((source - target)%(source - target));
 }
 
+
 int score(const Mat& source, const MatView& target_view) {
     return ant::linalg::sum((source - target_view)%(source - target_view));
 }
 
+
 int score(const Mat& source, const Position& pos, const Mat& target) {
     return score(source, MatView(target, ant::linalg::Region(pos, source.size())));
 }
+
 
 int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target) {
     double total_score = 0;
@@ -174,6 +200,7 @@ int scoreSmart(const map<Index, Region>& regions, const array<Mat,kSourceImageCo
     return total_score;
 }
 
+
 int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCount>& source, const Mat& target) {
     double total_score = 0;
     for (auto& p : regions) {
@@ -182,7 +209,6 @@ int scoreSilly(const map<Index, Region>& regions, const array<Mat,kSourceImageCo
     }
     return total_score;
 }
-
 
 
 vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original_size, Size size) {
@@ -224,6 +250,7 @@ vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original
     return regions;
 }
 
+
 void initData(const vector<int>& data, array<Mat, kSourceImageCount>& source, Mat& target) {
     auto start = data.begin();
     target = readImage(start);
@@ -231,6 +258,7 @@ void initData(const vector<int>& data, array<Mat, kSourceImageCount>& source, Ma
         source[k] = readImage(start);
     }
 }
+
 
 vector<int> formatCollage(const map<Index, Region>& regions) {
     vector<int> result(kSourceImageCount*4, -1);
@@ -244,6 +272,70 @@ vector<int> formatCollage(const map<Index, Region>& regions) {
         result[i*4+3] = r.col_end()-1;
     }
     return result;
+}
+
+vector<int> formatCollage(const vector<Item>& regions) {
+    vector<int> result(kSourceImageCount*4, -1);
+    for (auto p : regions) {
+        auto i = p.index;
+        const auto& r = p.region;
+        if (r.isEmpty()) continue;
+        result[i*4]   = r.row_begin();
+        result[i*4+1] = r.col_begin();
+        result[i*4+2] = r.row_end()-1;
+        result[i*4+3] = r.col_end()-1;
+    }
+    return result;
+}
+
+bool isValid(vector<Item> items, Size target_size) {
+    for (int i = 0; i < items.size(); ++i) {
+        for (int j = i+1; j < items.size(); ++j) {
+            if (items[i].region.hasIntersection(items[j].region)) {
+                return false;
+            }
+        }
+    }
+    Mat filling(target_size);
+    filling.fill(false);
+    for (auto i : items) {
+        for (auto p : i.region) {
+            filling[p] = true;
+        }
+    }
+    for (int r = 0; r < filling.row_count(); ++r) {
+        for (int c = 0; c < filling.col_count(); ++c) {
+            if (!filling(r, c)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool isValid(vector<Region> regions, Size target_size) {
+    for (int i = 0; i < regions.size(); ++i) {
+        for (int j = i+1; j < regions.size(); ++j) {
+            if (regions[i].hasIntersection(regions[j])) {
+                return false;
+            }
+        }
+    }
+    Mat filling(target_size);
+    filling.fill(false);
+    for (auto r : regions) {
+        for (auto p : r) {
+            filling[p] = true;
+        }
+    }
+    for (int r = 0; r < filling.row_count(); ++r) {
+        for (int c = 0; c < filling.col_count(); ++c) {
+            if (!filling(r, c)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 
