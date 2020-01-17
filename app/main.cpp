@@ -19,7 +19,7 @@
 #include "grid_approx.hpp"
 #include "grid_layout.hpp"
 #include "genetic.hpp"
-#include "ant/core.h"
+#include "ant/core/core.hpp"
 
 
 using namespace std;

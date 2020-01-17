@@ -11,8 +11,8 @@
 
 #include <queue>
 
-#include "ant/core.h"
-#include "ant/grid.h"
+#include "ant/core/core.hpp"
+#include "ant/grid/grid.hpp"
 #include "ant/linear_algebra/matrix.h"
 
 namespace collage_maker {

@@ -26,7 +26,7 @@ namespace collage_maker {
             Insertion() : source_index(-1) {}
             
             Insertion(Index source_index, Size size, double score) 
-            : source_index(source_index), size(size), score(score) {}
+            : source_index(source_index), score(score), size(size) {}
         };
         
         struct CompRegions {
@@ -91,7 +91,7 @@ namespace collage_maker {
             
             vector<Item> result;
             
-            for (Index i = 0; i < source.size(); ++i) {
+            for (size_t i = 0; i < source.size(); ++i) {
                 unused_sources_.insert(i);
             }
             

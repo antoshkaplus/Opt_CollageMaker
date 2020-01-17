@@ -5,22 +5,10 @@ cmake_minimum_required (VERSION 3.1)
 project (CollageMaker)
 
 
-list(APPEND CMAKE_CXX_FLAGS "-std=c++1y")
+list(APPEND CMAKE_CXX_FLAGS "-std=c++2a -Werror")
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -d -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
-
-set(BinDir "../bin")
-set(LibDir "../lib")
-
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BinDir} )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LibDir} )
-foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BinDir} )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LibDir} )
-endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
 
 file(GLOB SOURCE_FILES "./src/*.cpp")
 file(GLOB HEADER_FILES "./include/*.hpp")
@@ -49,8 +37,7 @@ target_link_libraries(CollageMakerApp
     CollageMaker)
 
 add_executable(CollageMakerTest ${TEST_FILES})
-target_include_directories(CollageMakerTest PUBLIC "/usr/local/include")
-target_link_libraries(CollageMakerTest 
+target_link_libraries(CollageMakerTest
     ${GTEST_MAIN_LIBRARY} 
     ${GTEST_LIBRARY} 
     ${ANT_LIBRARY} 

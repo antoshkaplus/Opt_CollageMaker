@@ -83,7 +83,7 @@ public:
         Iterator& operator++() {
             if (current_index == -1) return *this;
             ++current_index;
-            while (current_index != -1 && current_index == grid_.items(current_region).size()) {
+            while (current_index != -1 && current_index == static_cast<decltype(current_index)>(grid_.items(current_region).size())) {
                 current_index = 0;
                 // need to take next current_region
                 current_region.size.col += 1;
@@ -200,7 +200,7 @@ struct GridApprox {
         GridSourceScore res({t_h, t_w}, {s_max_h, s_max_w});
         // should scale target first
         Mat t = scaleSmart(target, {t_h * kCellSize, t_w * kCellSize});
-        for (int i = 0; i < source.size(); ++i) {
+        for (size_t i = 0; i < source.size(); ++i) {
             int s_h = source[i].row_count() / kCellSize;
             int s_w = source[i].col_count() / kCellSize;
             for (int h = 1; h <= s_h; ++h) {
@@ -214,7 +214,7 @@ struct GridApprox {
                         for (int c = 0; c < t_w - w + 1; ++c) {
                             MatView tv(t, {r * kCellSize, c * kCellSize, h * kCellSize, w * kCellSize});
                             double score = collage_maker::score(s, tv);
-                            res.AddItem({r, c}, {h, w}, {score, i});
+                            res.AddItem({r, c}, {h, w}, {score, static_cast<int>(i)});
                         }
                     }
                 }
@@ -231,7 +231,7 @@ struct GridApprox {
         };
         rs = scaleInnerRegions(rs, TargetGridSize(target.size()), target.size());
         vector<Item> items(rs.size());
-        for (int i = 0; i < rs.size(); ++i) {
+        for (size_t i = 0; i < rs.size(); ++i) {
             items[i] = Item{places[i].source_index, rs[i]};
         }
         return items;
@@ -239,8 +239,8 @@ struct GridApprox {
     
 private:
     Size TargetGridSize(Size sz) {
-        return {ceil(1. * sz.row / kCellSize),
-                ceil(1. * sz.col / kCellSize)};
+        return {static_cast<Int>(ceil(1. * sz.row / kCellSize)),
+                static_cast<Int>(ceil(1. * sz.col / kCellSize))};
     }
 };
 

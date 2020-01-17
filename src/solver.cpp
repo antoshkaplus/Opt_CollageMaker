@@ -215,7 +215,7 @@ vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original
     Mat original_mat(original_size);
     Mat mat(size);
     mat.fill(0);
-    for (auto i = 0; i < original_regions.size(); ++i) {
+    for (size_t i = 0; i < original_regions.size(); ++i) {
         assert(Region(0, 0, original_size.row, original_size.col).hasInside(original_regions[i]));
         original_mat[original_regions[i]] = i;
     }
@@ -241,7 +241,7 @@ vector<Region> scaleInnerRegions(vector<Region>& original_regions, Size original
             created[index] = true;
         }
     }
-    for (auto i = 0; i < regions.size(); ++i) {
+    for (size_t i = 0; i < regions.size(); ++i) {
         if (created[i]) continue;
         regions[i].size = Size{0, 0};
     }
@@ -289,8 +289,8 @@ vector<int> formatCollage(const vector<Item>& regions) {
 }
 
 bool isValid(vector<Item> items, Size target_size) {
-    for (int i = 0; i < items.size(); ++i) {
-        for (int j = i+1; j < items.size(); ++j) {
+    for (size_t i = 0; i < items.size(); ++i) {
+        for (size_t j = i+1; j < items.size(); ++j) {
             if (items[i].region.hasIntersection(items[j].region)) {
                 return false;
             }
@@ -314,8 +314,8 @@ bool isValid(vector<Item> items, Size target_size) {
 }
 
 bool isValid(vector<Region> regions, Size target_size) {
-    for (int i = 0; i < regions.size(); ++i) {
-        for (int j = i+1; j < regions.size(); ++j) {
+    for (size_t i = 0; i < regions.size(); ++i) {
+        for (size_t j = i+1; j < regions.size(); ++j) {
             if (regions[i].hasIntersection(regions[j])) {
                 return false;
             }

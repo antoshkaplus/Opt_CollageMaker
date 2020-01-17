@@ -1,4 +1,6 @@
 build*
+cmake-build-*/
 .DS_Store
 bin
 lib
+.idea/

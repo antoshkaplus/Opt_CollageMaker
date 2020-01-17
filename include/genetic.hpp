@@ -40,7 +40,7 @@ struct Genetic {
          
         // mutation : 
         
-    
+        return {};
     }
 
 };

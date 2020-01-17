@@ -91,7 +91,7 @@ namespace collage_maker {
             
             vector<Item> result;
             
-            for (Index i = 0; i < source.size(); ++i) {
+            for (size_t i = 0; i < source.size(); ++i) {
                 unused_sources_.insert(i);
             }
             
