@@ -4,11 +4,13 @@
 cmake_minimum_required (VERSION 3.1)
 project (CollageMaker)
 
+set( CMAKE_CONFIGURATION_TYPES  "Debug;Release;Profile" CACHE STRING "" FORCE )
 
 list(APPEND CMAKE_CXX_FLAGS "-std=c++2a -Werror")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE} -pg")
 
 file(GLOB SOURCE_FILES "./src/*.cpp")
 file(GLOB HEADER_FILES "./include/*.hpp")
