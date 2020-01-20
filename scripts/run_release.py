@@ -13,9 +13,10 @@
 """
 
 import os
+import sys
 
-os.system(r"java -jar CollageMakerVis.jar -exec 'python invoker.py'"
-          r" -target ../dataset/300px -source ../dataset/100px")
+os.system(r"java -jar CollageMakerVis.jar -exec 'python invoker.py %s'"
+          r" -target ../dataset/300px -source ../dataset/100px" % " ".join(sys.argv[1:]))
 
 
 #-Djava.awt.headless=true

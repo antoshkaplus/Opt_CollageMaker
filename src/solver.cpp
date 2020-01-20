@@ -180,7 +180,7 @@ int score(const Mat& source, const Mat& target) {
     return ant::linalg::sum((source - target)%(source - target));
 }
 
-
+// TODO takes 71% of execution
 int score(const Mat& source, const MatView& target_view) {
     return ant::linalg::sum((source - target_view)%(source - target_view));
 }

@@ -4,3 +4,5 @@ cmake-build-*/
 bin
 lib
 .idea/
+temp/
+scripts/log.txt

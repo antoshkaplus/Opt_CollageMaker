@@ -21,12 +21,23 @@
 #include "genetic.hpp"
 #include "ant/core/core.hpp"
 
+#ifdef WITHGPERFTOOLS
+    #include "gperftools/profiler.h"
+#endif
+
 
 using namespace std;
 using namespace collage_maker;
 
 
 int main(int argc, const char * argv[]) {
+
+#ifdef WITHGPERFTOOLS
+    ProfilerRegisterThread();
+    // for local profiler call Start/Stop with the name
+    // in that case don't need to specify env variable CPUPROFILE
+#endif
+
     auto pars = ant::command_line_options(argv, argc);
     string input_path = "input.txt";
     string output_path = "output.txt";
@@ -56,8 +67,8 @@ int main(int argc, const char * argv[]) {
     
     for (int i : formatCollage(items)) {
         output << i << " ";
-    } 
-    
+    }
+
     return 0;
 }
 
